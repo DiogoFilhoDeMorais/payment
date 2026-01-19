@@ -7,7 +7,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 public record PaymentRequest(
-    @NotNull String userAccount,
+    @NotNull String originAccount,
     @NotNull String beneficiaryAccount,
     @NotNull @DecimalMin("0.01") BigDecimal amount,
     @NotNull LocalDate scheduledPayment
