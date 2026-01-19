@@ -19,15 +19,18 @@ public class Payment {
     private String beneficiaryAccount;
     private BigDecimal amount;
     private BigDecimal fee;
-    private LocalDate currentDate;
+    private LocalDate todayDate;
     private LocalDate scheduledDate;
 
-    public Payment(String originAccount, String beneficiaryAccount, BigDecimal amount, BigDecimal fee, LocalDate currentDate, LocalDate scheduledDate) {
+    public Payment() {
+    }
+
+    public Payment(String originAccount, String beneficiaryAccount, BigDecimal amount, BigDecimal fee, LocalDate todayDate, LocalDate scheduledDate) {
         this.originAccount = originAccount;
         this.beneficiaryAccount = beneficiaryAccount;
         this.amount = amount;
         this.fee = fee;
-        this.currentDate = currentDate;
+        this.todayDate = todayDate;
         this.scheduledDate = scheduledDate;
     }
 
@@ -46,8 +49,8 @@ public class Payment {
     public BigDecimal getFee() {
         return fee;
     }
-    public LocalDate getCurrentDate() {
-        return currentDate;
+    public LocalDate getTodayDate() {
+        return todayDate;
     }
     public LocalDate getScheduledDate() {
         return scheduledDate;
@@ -55,5 +58,12 @@ public class Payment {
 
     public void setFee(BigDecimal fee) {
         this.fee = fee;
+    }
+
+    public void updatePaymentData(String originAccount, String beneficiaryAccount, BigDecimal amount, LocalDate scheduledDate) {
+        this.originAccount = originAccount;
+        this.beneficiaryAccount = beneficiaryAccount;
+        this.amount = amount;
+        this.scheduledDate = scheduledDate;
     }
 }

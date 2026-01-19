@@ -9,6 +9,6 @@ public record PaymentResponse(
     String beneficiaryAccount,
     BigDecimal amount,
     BigDecimal fee,
-    LocalDate currentDate,
+    LocalDate todayDate,
     LocalDate scheduledDate
 ) {}

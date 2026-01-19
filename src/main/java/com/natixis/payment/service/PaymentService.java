@@ -2,7 +2,6 @@ package com.natixis.payment.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -31,22 +30,26 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse createPayment(PaymentRequest request) {
-        var payment = new Payment(
-                request.originAccount(),
-                request.beneficiaryAccount(),
-                request.amount(),
-                BigDecimal.ZERO,
-                LocalDate.now(),
-                request.scheduledPayment()
+    public PaymentResponse atualizar(Long id, PaymentRequest request) {
+        var payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Not found"));
+
+        // Atualiza os dados usando o método de domínio
+        payment.updatePaymentData(
+            request.originAccount(),
+            request.beneficiaryAccount(),
+            request.amount(),
+            request.scheduledPayment()
         );
+
+        // Recalcula a taxa com os novos valores
         this.calcFee(payment);
-        var savedPayment = paymentRepository.save(payment);
-        return toResponse(savedPayment);
+
+        return toResponse(paymentRepository.save(payment));
     }
 
     private void calcFee(Payment payment) {
-        long difDays = ChronoUnit.DAYS.between(payment.getScheduledDate(), payment.getCurrentDate());
+        long difDays = ChronoUnit.DAYS.between(payment.getTodayDate(), payment.getScheduledDate());
 
         BigDecimal amount = payment.getAmount();
         var fee = BigDecimal.ZERO;
@@ -85,7 +88,7 @@ public class PaymentService {
             payment.getBeneficiaryAccount(), 
             payment.getAmount(), 
             payment.getFee(), 
-            payment.getCurrentDate(),
+            payment.getTodayDate(),
             payment.getScheduledDate()
         );
     }
