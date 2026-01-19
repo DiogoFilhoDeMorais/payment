@@ -2,6 +2,7 @@ package com.natixis.payment.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -30,11 +31,29 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse atualizar(Long id, PaymentRequest request) {
-        var payment = paymentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Not found"));
+    public PaymentResponse createPayment(PaymentRequest data) {
+        var payment = new Payment(
+            data.originAccount(),
+            data.beneficiaryAccount(),
+            data.amount(),
+            BigDecimal.ZERO,
+            LocalDate.now(),
+            data.scheduledPayment()
+        );
+        calcFee(payment);
+        var savedPayment = paymentRepository.save(payment);
+        return toResponse(savedPayment);
+    }
 
-        // Atualiza os dados usando o método de domínio
+    @Transactional
+    public PaymentResponse UpdatePaymentData(Long id, PaymentRequest request) {
+        var payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pagamento não encontrado com o ID: " + id));
+
+        if (payment.getScheduledDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Pagamentos efetivados não podem ser alterados.");
+        }
+
         payment.updatePaymentData(
             request.originAccount(),
             request.beneficiaryAccount(),
@@ -42,7 +61,6 @@ public class PaymentService {
             request.scheduledPayment()
         );
 
-        // Recalcula a taxa com os novos valores
         this.calcFee(payment);
 
         return toResponse(paymentRepository.save(payment));
@@ -78,7 +96,7 @@ public class PaymentService {
             else throw new IllegalArgumentException("Valores acima de 2000 só podem ser agendados após 10 dias.");
         }
 
-        payment.setFee(fee.setScale(2, RoundingMode.HALF_UP));
+        payment.setFee(fee.setScale(2));
     }
 
     private PaymentResponse toResponse(Payment payment) {
